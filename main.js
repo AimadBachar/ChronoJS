@@ -37,7 +37,7 @@ function main() {
     // Evènement qui détecte quand on clique sur le bouton "reset"
     btnReset.addEventListener('click', function () {    
         clearTimeout(timer);
-        timerDom.innerHTML = "00:00:00:00";
+        timerDom.innerHTML = "00h:00m:00s:00";
         sec = 0;
         min = 0;
         hrs = 0;

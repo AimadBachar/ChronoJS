@@ -1,0 +1,20 @@
+.container {
+  width: 100%;
+  max-width: 960px;
+  margin: 50px auto;
+  padding: 1rem;
+  background-color: cadetblue;
+  font-family: 'Michroma', sans-serif;
+  border-radius: 20px;
+}
+
+.primary {
+  padding: 20px;
+}
+
+#chrono {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-bottom: 20px;
+  padding: 1rem;
+}
