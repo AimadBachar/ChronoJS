@@ -9,19 +9,19 @@ let ball = {
   positionY: 0,
   directionX: 1,
   directionY: 1,
+  animation_id: 0,
+  animationPlay : true
 };
 let windowScreen = {
   windowWidth: 0,
   windowHeight: 0,
 };
-let animation_id;
-let animationPlay = true;
 
 /***********************************************************************************/
 /* ********************************** FONCTIONS ************************************/
 /***********************************************************************************/
 function moveBall() {
-  animationPlay = true;
+  ball.animationPlay = true;
   // Récupération de la taille de la fenêtre
   windowScreen.windowWidth = window.innerWidth;
   windowScreen.windowHeight = window.innerHeight;
@@ -48,12 +48,12 @@ function moveBall() {
   }
 
   // Réappel de la fonction
-  animation_id = window.requestAnimationFrame(moveBall);
+  ball.animation_id = window.requestAnimationFrame(moveBall);
 }
 
 function stopMoveBall() {
-  window.cancelAnimationFrame(animation_id);
-  animationPlay = false;
+  window.cancelAnimationFrame(ball.animation_id);
+  ball.animationPlay = false;
 }
 
 /************************************************************************************/
@@ -64,11 +64,11 @@ function main() {
   ball_DOM = document.querySelector("#ball");
 
   // Animation
-  animation_id = window.requestAnimationFrame(moveBall);
+  ball.animation_id = window.requestAnimationFrame(moveBall);
 
   // Gestion des évènements
   document.addEventListener("click", () => {
-    if (animationPlay === true) {
+    if (ball.animationPlay === true) {
       // Au clic sur l'écran stop la balle
       stopMoveBall();
     } else {
