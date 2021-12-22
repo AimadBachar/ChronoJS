@@ -17,13 +17,12 @@ let game = {
   color: "#DDDDDD",
     speed: 10,
 };
-let square = {
+let paddle = {
     color: 'black',
     x: 550,
-    y: 450,
-    width: 200,
+    y: 520,
+    width: 100,
     height: 50,
-    speed: 5,
     directionX: 1
 }
 
@@ -40,6 +39,7 @@ let ctx;
 /** Fonction qui affiche le cercle avec ces coordonnées et la couleur défini dans le contexte
  */
 function displayGame() {
+  
   // On vide le Canvas avant de redessiner
   ctx.clearRect(0, 0, canvasDom.width, canvasDom.height);
 
@@ -47,7 +47,9 @@ function displayGame() {
 
   displayCircle();
 
-  displaySquare();
+  displayPaddle();
+
+
 }
 
 function displayField() {
@@ -75,16 +77,16 @@ function displayCircle() {
   ctx.stroke();
 }
 
-function displaySquare() {
+function displayPaddle() {
   // On dit au contexte que la couleur de remplissage est noir
-  ctx.fillStyle = square.color;
+  ctx.fillStyle = paddle.color;
   // On dit au contexte que la couleur de trait est noir
-  ctx.strokeStyle = square.color;
+  ctx.strokeStyle = paddle.color;
   // On dit au contexte que la taille du trait est de 1
   ctx.lineWidth = 1;
   // On trace le contour (stroke) d'un rectangle
-  ctx.strokeRect(square.x, square.y, square.width, square.height);
-  ctx.fillRect(square.x, square.y, square.width, square.height);
+  ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
+  ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
 }
 
 // function moveBall() {
@@ -135,36 +137,60 @@ function playGame() {
     ball.directionY *= -1;
   }
 
+  if (conditionCollisionPaddle()) {
+    ball.directionY *= -1;
+  }
+    
+
   displayGame();
   // Réappel de la fonction
   ball.animation_id = window.requestAnimationFrame(playGame);
 }
 
+function moveBall() {
+  if (ball.animationPlay === true) {
+    // Au clic sur l'écran stop la balle
+    stopMoveBall();
+  } else {
+    // Au clic sur l'écran relance la balle
+    playGame();
+  }
+}
 function stopMoveBall() {
   window.cancelAnimationFrame(ball.animation_id);
   ball.animationPlay = false;
 }
 
-function moveSquare(e) {
+function movePaddle(e) {
 
     // on détecte la touche et la direction puis on change les coordonnées
 	 switch(e.key)
 	 {
 		 case 'ArrowRight':
-			 if (square.x + square.width < canvasDom.width ) square.x += game.speed;
+			 if (paddle.x + paddle.width < canvasDom.width ) paddle.x += game.speed;
 			 break;
 		 case 'ArrowLeft':
-			 if (square.x > 0) square.x -= game.speed;
+			 if (paddle.x > 0) paddle.x -= game.speed;
 			 break;
 	 }
  
 	 // On dessine notre carré 
-	 displaySquare();
+	 displayPaddle();
 }
+
+function conditionCollisionPaddle() {
+  if (ball.x + ball.radius >= paddle.x && ball.x - ball.radius <= paddle.x + paddle.width) {
+    if (ball.y + ball.radius >= paddle.y && ball.y - ball.radius <= paddle.y + paddle.height) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /************************************************************************************/
 /* ******************************** CODE PRINCIPAL **********************************/
 /************************************************************************************/
-function main() {
+function initGame() {
   // Récupération des éléments du DOM
   canvasDom = document.querySelector("#canvas");
 
@@ -172,22 +198,15 @@ function main() {
   ctx = canvasDom.getContext("2d");
 
   // Animation
-  ball.animation_id = window.requestAnimationFrame(playGame);
+  // ball.animation_id = window.requestAnimationFrame(playGame);
+  playGame();
 
   // Gestion des évènements
-  document.addEventListener("click", () => {
-    if (ball.animationPlay === true) {
-      // Au clic sur l'écran stop la balle
-      stopMoveBall();
-    } else {
-      // Au clic sur l'écran relance la balle
-      playGame();
-    }
-  });
+  document.addEventListener("click", moveBall);
 
   //Maintenant on met un évent pour savoir si l'utilisateur apuie sur une flèche du clavier 
-  document.addEventListener('keydown', moveSquare);
+  document.addEventListener('keydown', movePaddle);
 }
 
 /********************* MAIN  ***************************/
-document.addEventListener("DOMContentLoaded", main);
+document.addEventListener("DOMContentLoaded", initGame);
