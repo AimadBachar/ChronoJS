@@ -6,8 +6,8 @@
 let ball = {
   color: "blue",
   radius: 20,
-  x: 300,
-  y: 300,
+  x: (window.innerWidth - 400)/2,
+  y: 200,
   animation_id: null,
   animationPlay: true,
   directionX: 1,
@@ -15,20 +15,26 @@ let ball = {
 };
 let game = {
   color: "#DDDDDD",
-    speed: 10,
+  speed: 10,
+  gameOver: false,
 };
 let paddle = {
-    color: 'black',
-    x: 550,
-    y: 520,
-    width: 100,
-    height: 50,
-    directionX: 1
+  color: "black",
+  x: (window.innerWidth - 400)/2-150,
+  y: window.innerHeight - 120,
+  width: 300,
+  height: 50,
+  directionX: 1,
+  speed: 10
+};
+
+let field = {
+  
 }
 
 // Notre context et notre Canvas sont définis dans le Scope global pour un accès par nos fonctions
 let canvasDom = {
-  color: "#DDDDDD"
+  color: "#DDDDDD",
 };
 let ctx;
 
@@ -39,24 +45,24 @@ let ctx;
 /** Fonction qui affiche le cercle avec ces coordonnées et la couleur défini dans le contexte
  */
 function displayGame() {
-  
+  // cadre de jeu dynamique
+  canvasDom.width = window.innerWidth - 400;
+  canvasDom.height = window.innerHeight - 50;
   // On vide le Canvas avant de redessiner
   ctx.clearRect(0, 0, canvasDom.width, canvasDom.height);
 
   displayField();
-
+  
+  if (game.gameOver) {
+    displayGameOver();
+  }
   displayCircle();
 
   displayPaddle();
 
-
 }
 
 function displayField() {
-  // cadre de jeu dynamique
-  canvasDom.width = window.innerWidth - 200;
-  canvasDom.height = window.innerHeight - 50;
-
   // On dit au contexte que la couleur de remplissage est gris
   ctx.fillStyle = game.color;
   // On rempli le Canvas de gris en fond
@@ -84,39 +90,11 @@ function displayPaddle() {
   ctx.strokeStyle = paddle.color;
   // On dit au contexte que la taille du trait est de 1
   ctx.lineWidth = 1;
+
   // On trace le contour (stroke) d'un rectangle
   ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
   ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
 }
-
-// function moveBall() {
-//   ball.animationPlay = true;
-
-//   // Changement de la position de la balle en fonction de la direction
-//   ball.x += ball.directionX * 10;
-//   ball_DOM.style.left = `${ball.x}px`;
-//   ball.y += ball.directionY * 10;
-//   ball_DOM.style.top = `${ball.y}px`;
-
-//   // Changement de la direction de la balle
-//   if (
-//     ball.positionX >= windowScreen.windowWidth - ball_DOM.clientWidth ||
-//     ball.positionX <= 0
-//   ) {
-//     // Si la balle sort de la fenêtre , ball_DOM.clientWidth = largeur de la balle
-//     ball.directionX *= -1;
-//   }
-
-//   if (
-//     ball.positionY >= windowScreen.windowHeight - ball_DOM.clientHeight ||
-//     ball.positionY <= 0
-//   ) {
-//     ball.directionY *= -1;
-//   }
-
-//   // Réappel de la fonction
-//   ball.animation_id = window.requestAnimationFrame(moveBall);
-// }
 
 function playGame() {
   ball.animationPlay = true;
@@ -133,14 +111,23 @@ function playGame() {
   //     ball.directionX *= -1;
   //   }
 
-  if (ball.y >= canvasDom.height - (ball.radius/2) || ball.y - ball.radius <= 0) {
+  if (detectCollisionFloor()) {
+    ball.directionY *= 0;
+    ball.directionX *= 0;
+    game.gameOver = true;
+    displayGame();
+  }
+
+  if (
+    ball.y >= canvasDom.height - ball.radius / 2 ||
+    ball.y - ball.radius <= 0
+  ) {
     ball.directionY *= -1;
   }
 
   if (conditionCollisionPaddle()) {
     ball.directionY *= -1;
   }
-    
 
   displayGame();
   // Réappel de la fonction
@@ -162,29 +149,47 @@ function stopMoveBall() {
 }
 
 function movePaddle(e) {
+  // on détecte la touche et la direction puis on change les coordonnées
+  switch (e.key) {
+    case "ArrowRight":
+      if (paddle.x + paddle.width < canvasDom.width) paddle.x += game.speed;
+      break;
+    case "ArrowLeft":
+      if (paddle.x > 0) paddle.x -= game.speed;
+      break;
+  }
 
-    // on détecte la touche et la direction puis on change les coordonnées
-	 switch(e.key)
-	 {
-		 case 'ArrowRight':
-			 if (paddle.x + paddle.width < canvasDom.width ) paddle.x += game.speed;
-			 break;
-		 case 'ArrowLeft':
-			 if (paddle.x > 0) paddle.x -= game.speed;
-			 break;
-	 }
- 
-	 // On dessine notre carré 
-	 displayPaddle();
+}
+
+function detectCollisionFloor() {
+    if (
+      ball.y + ball.radius >= canvasDom.height
+    ) {
+      return true;
+    }
+    return false;
 }
 
 function conditionCollisionPaddle() {
-  if (ball.x + ball.radius >= paddle.x && ball.x - ball.radius <= paddle.x + paddle.width) {
-    if (ball.y + ball.radius >= paddle.y && ball.y - ball.radius <= paddle.y + paddle.height) {
+  if (
+    ball.x + ball.radius >= paddle.x &&
+    ball.x - ball.radius <= paddle.x + paddle.width
+  ) {
+    if (
+      ball.y + ball.radius >= paddle.y &&
+      ball.y - ball.radius <= paddle.y + paddle.height
+    ) {
       return true;
     }
   }
   return false;
+    
+}
+
+function displayGameOver() {
+  ctx.fillStyle = "Red";
+  ctx.font = "60px Arial";
+  ctx.fillText("GAME OVER", canvasDom.width / 2 - 100, canvasDom.height / 2);
 }
 
 /************************************************************************************/
@@ -197,15 +202,15 @@ function initGame() {
   // Récupération du context du canvas
   ctx = canvasDom.getContext("2d");
 
-  // Animation
-  // ball.animation_id = window.requestAnimationFrame(playGame);
+  displayGame();
+
   playGame();
 
   // Gestion des évènements
   document.addEventListener("click", moveBall);
 
-  //Maintenant on met un évent pour savoir si l'utilisateur apuie sur une flèche du clavier 
-  document.addEventListener('keydown', movePaddle);
+  //Maintenant on met un évent pour savoir si l'utilisateur apuie sur une flèche du clavier
+  document.addEventListener("keydown", movePaddle);
 }
 
 /********************* MAIN  ***************************/
