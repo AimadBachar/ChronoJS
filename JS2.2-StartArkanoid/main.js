@@ -17,6 +17,8 @@ let game = {
   color: "#DDDDDD",
   speed: 10,
   gameOver: false,
+  pause: false,
+  start: false
 };
 let paddle = {
   color: "black",
@@ -31,6 +33,8 @@ let paddle = {
 let field = {
   
 }
+
+let count = 0;
 
 // Notre context et notre Canvas sont définis dans le Scope global pour un accès par nos fonctions
 let canvasDom = {
@@ -60,6 +64,15 @@ function displayGame() {
 
   displayPaddle();
 
+}
+
+function initPositions() {
+  ball.x = (window.innerWidth - 400)/2;
+  ball.y =  window.innerHeight - 121 - ball.radius;
+  paddle.x = (window.innerWidth - 400)/2-150;
+  paddle.y = window.innerHeight - 120;
+  ball.directionX = 0;
+  ball.directionY = 1;
 }
 
 function displayField() {
@@ -127,6 +140,7 @@ function playGame() {
 
   if (conditionCollisionPaddle()) {
     ball.directionY *= -1;
+    ball.directionX *= 1;
   }
 
   displayGame();
@@ -187,10 +201,33 @@ function conditionCollisionPaddle() {
 }
 
 function displayGameOver() {
+  game.start = false;
   ctx.fillStyle = "Red";
   ctx.font = "60px Arial";
   ctx.fillText("GAME OVER", canvasDom.width / 2 - 100, canvasDom.height / 2);
 }
+
+function launchBall(e) {
+  if (e.key === " " && count === 0) {
+    if (game.start === false) {
+      game.start = true;
+      count++;
+      playGame();
+    } else if (game.gameOver === true) {
+      game.gameOver = false;
+      count = 0;
+      initGame();
+    } else {
+
+    playGame();
+    }
+
+  } else if (e.key === " " && count === 1) {
+    stopMoveBall();
+    count = 0;
+  }
+}
+
 
 /************************************************************************************/
 /* ******************************** CODE PRINCIPAL **********************************/
@@ -202,15 +239,18 @@ function initGame() {
   // Récupération du context du canvas
   ctx = canvasDom.getContext("2d");
 
-  displayGame();
+  initPositions();
 
-  playGame();
+  displayGame();
 
   // Gestion des évènements
   document.addEventListener("click", moveBall);
 
   //Maintenant on met un évent pour savoir si l'utilisateur apuie sur une flèche du clavier
   document.addEventListener("keydown", movePaddle);
+
+  // Barre d'espace pour lancer la balle et relancer le jeu
+  document.addEventListener("keydown", launchBall);
 }
 
 /********************* MAIN  ***************************/
